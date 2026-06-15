@@ -200,3 +200,35 @@ export interface AwardRedemption {
   award?: Award
   user?: User
 }
+
+export type ForumCriterion = 'impacto' | 'viabilidad' | 'urgencia' | 'alineacion' | 'costo'
+
+export interface ForumEvaluation {
+  id: string
+  improvement_id: string
+  evaluator_id: string
+  impacto: number
+  viabilidad: number
+  urgencia: number
+  alineacion: number
+  costo: number
+  comment: string
+  created_at: string
+  updated_at: string
+}
+
+export interface ForumRankingEntry {
+  improvement_id: string
+  title: string
+  area: string
+  avg_score: number
+  evaluator_count: number
+  rank: number
+  is_top: boolean
+}
+
+export interface PointSettings {
+  id: string
+  participation_points: number
+  updated_at: string
+}

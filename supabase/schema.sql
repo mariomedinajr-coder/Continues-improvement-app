@@ -609,3 +609,69 @@ drop policy if exists app_buckets_all on storage.objects;
 create policy app_buckets_all on storage.objects for all to anon, authenticated
   using (bucket_id in ('improvements','awards'))
   with check (bucket_id in ('improvements','awards'));
+
+-- ============================================================
+-- MONTHLY EVALUATION FORUM
+-- Panel members (admin/manager) score each improvement on 5 criteria
+-- (1-5, higher = better) to rank them and surface the Top 5. No points here.
+-- ============================================================
+create table forum_evaluations (
+  id uuid primary key default uuid_generate_v4(),
+  improvement_id uuid not null references improvements(id) on delete cascade,
+  evaluator_id uuid not null references users(id) on delete cascade,
+  impacto    smallint not null default 3 check (impacto between 1 and 5),
+  viabilidad smallint not null default 3 check (viabilidad between 1 and 5),
+  urgencia   smallint not null default 3 check (urgencia between 1 and 5),
+  alineacion smallint not null default 3 check (alineacion between 1 and 5),
+  costo      smallint not null default 3 check (costo between 1 and 5),
+  comment text not null default '',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (improvement_id, evaluator_id)
+);
+
+create trigger forum_evaluations_updated_at
+  before update on forum_evaluations
+  for each row execute function update_updated_at();
+
+-- Single-row settings: participation points the admin grants on top of SQDCM
+-- impact (so everyone earns something just for participating).
+create table point_settings (
+  id uuid primary key default uuid_generate_v4(),
+  participation_points integer not null default 0 check (participation_points >= 0),
+  singleton boolean not null default true unique,
+  updated_at timestamptz not null default now()
+);
+
+create trigger point_settings_updated_at
+  before update on point_settings
+  for each row execute function update_updated_at();
+
+insert into point_settings (participation_points) values (0);
+
+-- RLS
+alter table forum_evaluations enable row level security;
+alter table point_settings enable row level security;
+
+-- forum_evaluations: anyone signed in reads rankings; an evaluator writes only
+-- their own row; admins/managers may manage any.
+drop policy if exists forum_eval_select on forum_evaluations;
+create policy forum_eval_select on forum_evaluations for select using (true);
+drop policy if exists forum_eval_write on forum_evaluations;
+create policy forum_eval_write on forum_evaluations for all
+  using (
+    evaluator_id = public.current_user_id()
+    or public."current_role"() in ('admin','manager')
+  )
+  with check (
+    evaluator_id = public.current_user_id()
+    or public."current_role"() in ('admin','manager')
+  );
+
+-- point_settings: public read, admin write (like sqdcm_point_config)
+drop policy if exists point_settings_select on point_settings;
+create policy point_settings_select on point_settings for select using (true);
+drop policy if exists point_settings_admin_write on point_settings;
+create policy point_settings_admin_write on point_settings for all
+  using (public."current_role"() = 'admin')
+  with check (public."current_role"() = 'admin');

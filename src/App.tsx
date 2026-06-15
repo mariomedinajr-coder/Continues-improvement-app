@@ -8,6 +8,7 @@ import ImprovementForm from './pages/ImprovementForm'
 import ImprovementDetail from './pages/ImprovementDetail'
 import ImprovementPresent from './pages/ImprovementPresent'
 import Leaderboard from './pages/Leaderboard'
+import Forum from './pages/Forum'
 import Admin from './pages/Admin'
 import Users from './pages/Users'
 import Teams from './pages/Teams'
@@ -59,6 +60,7 @@ export default function App() {
             <Route path="/improvements/:id" element={<ImprovementDetail />} />
             <Route path="/improvements/:id/present" element={<ImprovementPresent />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
+            <Route path="/forum" element={<Forum />} />
             <Route path="/awards" element={<Awards />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/users" element={<Users />} />

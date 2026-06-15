@@ -88,6 +88,8 @@ function PointConfigTab() {
         PointConfigRow
       >
   )
+  const [participationPoints, setParticipationPoints] = useState(0)
+  const [participationId, setParticipationId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -115,6 +117,16 @@ function PointConfigTab() {
             }
           }
           setConfig(updated)
+        }
+
+        const { data: ps } = await supabase
+          .from('point_settings')
+          .select('id, participation_points')
+          .limit(1)
+          .maybeSingle()
+        if (ps) {
+          setParticipationId(ps.id as string)
+          setParticipationPoints(ps.participation_points as number)
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err))
@@ -150,6 +162,15 @@ function PointConfigTab() {
         .upsert(rows, { onConflict: 'category,impact_level' })
 
       if (upsertError) throw upsertError
+
+      const { error: psError } = participationId
+        ? await supabase
+            .from('point_settings')
+            .update({ participation_points: participationPoints })
+            .eq('id', participationId)
+        : await supabase.from('point_settings').insert({ participation_points: participationPoints })
+      if (psError) throw psError
+
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
     } catch (err) {
@@ -236,6 +257,20 @@ function PointConfigTab() {
         </table>
       </div>
 
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm px-6 py-4 flex items-center justify-between gap-4">
+        <div className="min-w-0">
+          <p className="text-sm font-medium text-gray-900">{t('admin.participationPoints')}</p>
+          <p className="text-xs text-gray-400">{t('admin.participationPointsHint')}</p>
+        </div>
+        <input
+          type="number"
+          min={0}
+          value={participationPoints}
+          onChange={(e) => setParticipationPoints(Math.max(0, parseInt(e.target.value, 10) || 0))}
+          className="w-24 rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-center text-gray-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+        />
+      </div>
+
       <div className="flex justify-end">
         <button
           onClick={handleSave}
@@ -255,6 +290,7 @@ interface AssignModalProps {
   improvement: PendingImprovement
   pointConfig: Record<SQDCMCategory, PointConfigRow>
   evaluatorId: string | null
+  defaultParticipationPoints: number
   onClose: () => void
   onAssigned: () => void
 }
@@ -279,9 +315,10 @@ function normaliseImpactList(source: SQDCMImpact[] | undefined): SQDCMImpact[] {
   return CATEGORIES.map(c => byCat.get(c) ?? { category: c, description: '', impact_level: 'none' as ImpactLevel })
 }
 
-function AssignModal({ improvement, pointConfig, evaluatorId, onClose, onAssigned }: AssignModalProps) {
+function AssignModal({ improvement, pointConfig, evaluatorId, defaultParticipationPoints, onClose, onAssigned }: AssignModalProps) {
   const { t } = useTranslation()
   const isReevaluation = !!improvement.evaluated_at
+  const [participationPoints, setParticipationPoints] = useState(defaultParticipationPoints)
 
   // Submitter's suggestion (read-only hint)
   const submitterImpacts = useMemo(
@@ -305,6 +342,8 @@ function AssignModal({ improvement, pointConfig, evaluatorId, onClose, onAssigne
     () => impacts.reduce((sum, i) => sum + impactPoints(i.impact_level, i.category, pointConfig), 0),
     [impacts, pointConfig],
   )
+
+  const totalPerParticipant = calculatedPoints + participationPoints
 
   useEffect(() => {
     let cancelled = false
@@ -341,7 +380,7 @@ function AssignModal({ improvement, pointConfig, evaluatorId, onClose, onAssigne
       setError(t('admin.errors.noParticipants'))
       return
     }
-    if (calculatedPoints === 0) {
+    if (totalPerParticipant === 0) {
       setError(t('admin.errors.noImpact'))
       return
     }
@@ -372,7 +411,7 @@ function AssignModal({ improvement, pointConfig, evaluatorId, onClose, onAssigne
       const inserts = selected.map(p => ({
         improvement_id: improvement.id,
         user_id: p.user_id,
-        points: calculatedPoints,
+        points: totalPerParticipant,
         assigned_by: evaluatorId ?? 'manager',
       }))
       const { error: insErr } = await supabase.from('point_assignments').insert(inserts)
@@ -488,12 +527,26 @@ function AssignModal({ improvement, pointConfig, evaluatorId, onClose, onAssigne
             </div>
           </div>
 
+          <div className="flex items-center justify-between gap-3 rounded-xl border border-gray-200 px-4 py-3">
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-gray-800">{t('admin.participationPoints')}</p>
+              <p className="text-xs text-gray-400">{t('admin.participationPointsHint')}</p>
+            </div>
+            <input
+              type="number"
+              min={0}
+              value={participationPoints}
+              onChange={e => setParticipationPoints(Math.max(0, parseInt(e.target.value, 10) || 0))}
+              className="w-24 rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-center text-gray-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
+
           <div className="flex items-center justify-between rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 px-5 py-3">
             <div>
               <p className="text-xs uppercase font-bold text-blue-700 tracking-wider">{t('admin.calculatedPoints')}</p>
               <p className="text-xs text-blue-600 mt-0.5">{t('admin.perParticipant')}</p>
             </div>
-            <span className="text-3xl font-bold text-blue-700">{calculatedPoints} <span className="text-base font-medium">pts</span></span>
+            <span className="text-3xl font-bold text-blue-700">{totalPerParticipant} <span className="text-base font-medium">pts</span></span>
           </div>
 
           <div>
@@ -575,11 +628,19 @@ function AssignPointsTab() {
   )
   const [selectedImprovement, setSelectedImprovement] = useState<PendingImprovement | null>(null)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
+  const [participationPoints, setParticipationPoints] = useState(0)
 
   const loadData = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
+      const { data: ps } = await supabase
+        .from('point_settings')
+        .select('participation_points')
+        .limit(1)
+        .maybeSingle()
+      if (ps) setParticipationPoints(ps.participation_points as number)
+
       const { data: configData } = await supabase.from('sqdcm_point_config').select('*')
       if (configData && configData.length > 0) {
         const updated = Object.fromEntries(
@@ -755,6 +816,7 @@ function AssignPointsTab() {
           improvement={selectedImprovement}
           pointConfig={pointConfig}
           evaluatorId={profile?.id ?? null}
+          defaultParticipationPoints={participationPoints}
           onClose={() => setSelectedImprovement(null)}
           onAssigned={handleAssigned}
         />

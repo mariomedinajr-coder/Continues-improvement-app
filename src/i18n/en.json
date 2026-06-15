@@ -4,6 +4,7 @@
     "improvements": "Improvements",
     "submit": "Submit Improvement",
     "leaderboard": "Leaderboard",
+    "forum": "Forum",
     "admin": "Admin",
     "users": "Users",
     "teams": "Teams",
@@ -97,6 +98,32 @@
     "totalParticipants": "Participants",
     "present": "Present",
     "continueDraft": "Continue"
+  },
+  "forum": {
+    "title": "Monthly Evaluation Forum",
+    "subtitle": "Score this month's improvements to select the Top 5",
+    "month": "Month",
+    "selectMonth": "Select month",
+    "criteria": {
+      "impacto": "Impact",
+      "viabilidad": "Feasibility",
+      "urgencia": "Urgency",
+      "alineacion": "Strategic alignment",
+      "costo": "Estimated cost"
+    },
+    "costoHint": "5 = lowest cost",
+    "scaleHint": "1 = low, 5 = high",
+    "comment": "Comment",
+    "yourScores": "Your scores",
+    "saveScores": "Save scores",
+    "saved": "Scores saved",
+    "ranking": "Ranking",
+    "topFive": "Top 5",
+    "rank": "Rank",
+    "avgScore": "Avg. score",
+    "evaluators": "evaluators",
+    "notEvaluated": "Not yet scored",
+    "noImprovements": "No improvements submitted this month"
   },
   "present": {
     "title": "Improvement Presentation",
@@ -305,6 +332,8 @@
     "improvement": "Improvement",
     "participants": "Participants",
     "calculatedPoints": "Calculated Points",
+    "participationPoints": "Participation points",
+    "participationPointsHint": "Added to every participant, even with no SQDCM impact",
     "confirmAssign": "Confirm Assignment",
     "pointsAssigned": "Points successfully assigned",
     "filter": {

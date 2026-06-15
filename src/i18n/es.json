@@ -4,6 +4,7 @@
     "improvements": "Mejoras",
     "submit": "Registrar Mejora",
     "leaderboard": "Clasificación",
+    "forum": "Foro",
     "admin": "Administración",
     "users": "Colaboradores",
     "teams": "Equipos",
@@ -97,6 +98,32 @@
     "totalParticipants": "Participantes",
     "present": "Presentar",
     "continueDraft": "Continuar"
+  },
+  "forum": {
+    "title": "Foro de Evaluación Mensual",
+    "subtitle": "Califica las mejoras del mes para elegir el Top 5",
+    "month": "Mes",
+    "selectMonth": "Seleccionar mes",
+    "criteria": {
+      "impacto": "Impacto",
+      "viabilidad": "Viabilidad",
+      "urgencia": "Urgencia",
+      "alineacion": "Alineación estratégica",
+      "costo": "Costo estimado"
+    },
+    "costoHint": "5 = menor costo",
+    "scaleHint": "1 = bajo, 5 = alto",
+    "comment": "Comentario",
+    "yourScores": "Tus calificaciones",
+    "saveScores": "Guardar calificaciones",
+    "saved": "Calificaciones guardadas",
+    "ranking": "Clasificación",
+    "topFive": "Top 5",
+    "rank": "Posición",
+    "avgScore": "Puntaje prom.",
+    "evaluators": "evaluadores",
+    "notEvaluated": "Sin calificar",
+    "noImprovements": "No hay mejoras enviadas este mes"
   },
   "present": {
     "title": "Presentación de Mejora",
@@ -305,6 +332,8 @@
     "improvement": "Mejora",
     "participants": "Participantes",
     "calculatedPoints": "Puntos Calculados",
+    "participationPoints": "Puntos de participación",
+    "participationPointsHint": "Se suman a cada participante, aun sin impacto SQDCM",
     "confirmAssign": "Confirmar Asignación",
     "pointsAssigned": "Puntos asignados correctamente",
     "filter": {

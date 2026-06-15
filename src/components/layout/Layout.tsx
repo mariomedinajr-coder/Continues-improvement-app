@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
-  LayoutDashboard, TrendingUp, PlusCircle, Trophy, Settings, Users, UsersRound, Gift, Menu, X, Globe, LogOut,
+  LayoutDashboard, TrendingUp, PlusCircle, Trophy, ClipboardCheck, Settings, Users, UsersRound, Gift, Menu, X, Globe, LogOut,
 } from 'lucide-react'
 import { useAuth } from '../../lib/auth'
 import type { UserRole } from '../../types'
@@ -31,6 +31,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     { to: '/improvements',    label: t('nav.improvements'), icon: TrendingUp },
     { to: '/improvements/new',label: t('nav.submit'),       icon: PlusCircle },
     { to: '/leaderboard',     label: t('nav.leaderboard'),  icon: Trophy },
+    { to: '/forum',           label: t('nav.forum'),        icon: ClipboardCheck, roles: ['admin', 'manager'] },
     { to: '/awards',          label: t('nav.awards'),       icon: Gift },
     { to: '/admin',           label: t('nav.admin'),        icon: Settings, roles: ['admin', 'manager'] },
     { to: '/users',           label: t('nav.users'),        icon: Users,    roles: ['admin'] },
